@@ -9,7 +9,7 @@ window.addEventListener('load', function () {
     ctx.strokeStyle = 'white';
 
     class Player {
-        constructor(game){
+        constructor(game) {
             this.game = game;
             this.collisionX = this.game.width * 0.5;
             this.collisionY = this.game.height * 0.5;
@@ -29,9 +29,9 @@ window.addEventListener('load', function () {
             this.frameY = 0;
             this.image = document.getElementById('bull');
         }
-        draw(context){
+        draw(context) {
             context.drawImage(this.image, this.frameX * this.spriteWidth, this.frameY * this.spriteHeight, this.spriteWidth, this.spriteHeight, this.spriteX, this.spriteY, this.width, this.height);
-            if (this.game.debug){
+            if (this.game.debug) {
                 context.beginPath();
                 context.arc(this.collisionX, this.collisionY, this.collisionRadius, 0, Math.PI * 2);
                 context.save();
@@ -45,7 +45,7 @@ window.addEventListener('load', function () {
                 context.stroke();
             }
         }
-        update(){
+        update() {
             this.dx = this.game.mouse.x - this.collisionX;
             this.dy = this.game.mouse.y - this.collisionY;
             //sprite animation
@@ -58,12 +58,12 @@ window.addEventListener('load', function () {
             else if (angle < 1.17) this.frameY = 3;
             else if (angle < 1.96) this.frameY = 4;
             else if (angle < 2.74) this.frameY = 5;
-            
+
             const distance = Math.hypot(this.dy, this.dx); //primero Y con pitagoras
-            if (distance > this.speedModifier){
-                this.speedX = this.dx/distance || 0;
-                this.speedY = this.dy/distance || 0;
-            }else{
+            if (distance > this.speedModifier) {
+                this.speedX = this.dx / distance || 0;
+                this.speedY = this.dy / distance || 0;
+            } else {
                 this.speedX = 0;
                 this.speedY = 0;
             }
@@ -83,7 +83,7 @@ window.addEventListener('load', function () {
                 let [collision, distance, sumOfRadii, dx, dy] = this.game.checkCollision(this, obstacle);
                 // let collision = game.checkCollision(this, obstacle)[0];
                 // let distance = game.checkCollision(this, obstacle)[1];
-                if (collision){
+                if (collision) {
                     const unit_x = dx / distance;
                     const unit_y = dy / distance;
                     this.collisionX = obstacle.collisionX + (sumOfRadii + 1) * unit_x;
@@ -94,9 +94,9 @@ window.addEventListener('load', function () {
     }
 
     class Obstacle {
-        constructor(game){
+        constructor(game) {
             this.game = game;
-            this .collisionX = Math.random() * this.game.width;
+            this.collisionX = Math.random() * this.game.width;
             this.collisionY = Math.random() * this.game.height;
             this.collisionRadius = 40;
             this.image = document.getElementById('obstacles');
@@ -109,9 +109,9 @@ window.addEventListener('load', function () {
             this.frameX = Math.floor(Math.random() * 4);
             this.frameY = Math.floor(Math.random() * 3);
         }
-        draw(context){
+        draw(context) {
             context.drawImage(this.image, this.frameX * this.spriteWidth, this.frameY * this.spriteHeight, this.spriteWidth, this.spriteHeight, this.spriteX, this.spriteY, this.width, this.height);
-            if (this.game.debug){
+            if (this.game.debug) {
                 context.beginPath();
                 context.arc(this.collisionX, this.collisionY, this.collisionRadius, 0, Math.PI * 2);
                 context.save();
@@ -121,13 +121,13 @@ window.addEventListener('load', function () {
                 context.stroke();
             }
         }
-        update(){
+        update() {
 
         }
     }
 
     class Egg {
-        constructor(game){
+        constructor(game) {
             this.game = game;
             this.collisionRadius = 40;
             this.margin = this.collisionRadius * 2;
@@ -141,9 +141,9 @@ window.addEventListener('load', function () {
             this.spriteX;
             this.spriteY;
         }
-        draw(context){
+        draw(context) {
             context.drawImage(this.image, this.spriteX, this.spriteY);
-            if (this.game.debug){
+            if (this.game.debug) {
                 context.beginPath();
                 context.arc(this.collisionX, this.collisionY, this.collisionRadius, 0, Math.PI * 2);
                 context.save();
@@ -153,24 +153,72 @@ window.addEventListener('load', function () {
                 context.stroke();
             }
         }
-        update(){
+        update() {
             this.spriteX = this.collisionX - this.width * 0.5;
             this.spriteY = this.collisionY - this.height * 0.5 - 30;
-           let collisionObjects = [this.game.player, ...this.game.obstacles];
-           collisionObjects.forEach (object => {
+            let collisionObjects = [this.game.player, ...this.game.obstacles, ...this.game.enemies];
+            collisionObjects.forEach(object => {
                 let [collision, distance, sumOfRadii, dx, dy] = this.game.checkCollision(this, object);
-                if (collision){
+                if (collision) {
                     const unit_x = dx / distance;
                     const unit_y = dy / distance;
-                    this.collisionX = object.collisionX + (sumOfRadii +1) * unit_x;
+                    this.collisionX = object.collisionX + (sumOfRadii + 1) * unit_x;
                     this.collisionY = object.collisionY + (sumOfRadii + 1) * unit_y;
                 }
-           })
+            });
+        }
+    }
+
+    class Enemy {
+        constructor(game) {
+            this.game = game;
+            this.collisionRadius = 30;
+            this.speedX = Math.random() * 3 + 0.5;
+            this.image = document.getElementById('toad');
+            this.spriteWidth = 140;
+            this.spriteHeight = 260;
+            this.width = this.spriteWidth;
+            this.height = this.spriteHeight;
+            this.collisionX = this.game.width + this.width + Math.random() * this.game.width * 0.5;
+            this.collisionY = this.game.topMargin + (Math.random() * (this.game.height - this.game.topMargin));
+            this.spriteX;
+            this.spriteY;
+        }
+        draw(context) {
+            context.drawImage(this.image, this.spriteX, this.spriteY);
+            if (this.game.debug) {
+                context.beginPath();
+                context.arc(this.collisionX, this.collisionY, this.collisionRadius, 0, Math.PI * 2);
+                context.save();
+                context.globalAlpha = 0.5;
+                context.fill();
+                context.restore();
+                context.stroke();
+            }
+        }
+        update() {
+            this.spriteX = this.collisionX - this.width * 0.5;
+            this.spriteY = this.collisionY - this.height * 0.5 - 40;
+            this.collisionX -= this.speedX;
+            if (this.spriteX + this.width < 0) {
+                this.collisionX = this.game.width + this.width + Math.random() * this.game.width * 0.5;
+                this.collisionY = this.game.topMargin + (Math.random() * (this.game.height - this.game.topMargin));
+            }
+            let collisionObjects = [this.game.player, ...this.game.obstacles];
+            collisionObjects.forEach(object => {
+                let [collision, distance, sumOfRadii, dx, dy] = this.game.checkCollision(this, object);
+                if (collision) {
+                    const unit_x = dx / distance;
+                    const unit_y = dy / distance;
+                    this.collisionX = object.collisionX + (sumOfRadii + 1) * unit_x;
+                    this.collisionY = object.collisionY + (sumOfRadii + 1) * unit_y;
+                }
+            });
         }
     }
 
     class Game {
-        constructor(canvas){
+        constructor(canvas) {
             this.canvas = canvas;
             this.width = this.canvas.width;
             this.height = this.canvas.height;
@@ -179,12 +227,13 @@ window.addEventListener('load', function () {
             this.player = new Player(this);
             this.fps = 70;
             this.timer = 0;
-            this.interval = 1000/this.fps;
+            this.interval = 1000 / this.fps;
             this.eggTimer = 0;
             this.eggInterval = 1000;
             this.numberOfObstacles = 10;
             this.obstacles = [];
             this.eggs = [];
+            this.enemies = [];
             this.gameObjects = [];
             this.maxEggs = 20;
             this.mouse = {
@@ -207,20 +256,20 @@ window.addEventListener('load', function () {
             });
 
             canvas.addEventListener('mousemove', e => {
-                if(this.mouse.pressed){
+                if (this.mouse.pressed) {
                     this.mouse.x = e.offsetX;
                     this.mouse.y = e.offsetY;
-                }            
+                }
             });
             window.addEventListener('keydown', e => {
-                if(e.key == 'd') this.debug = !this.debug;
+                if (e.key == 'd') this.debug = !this.debug;
             })
         }
-        render(context, deltaTime){
-            if  (this.timer > this.interval){
+        render(context, deltaTime) {
+            if (this.timer > this.interval) {
                 context.clearRect(0, 0, this.width, this.height);
                 //Following order states which object stays behind which
-                this.gameObjects = [...this.eggs, ...this.obstacles, this.player];
+                this.gameObjects = [...this.eggs, ...this.obstacles, this.player, ...this.enemies];
                 //sort by vertical position (which objects hides which)
                 this.gameObjects.sort((a, b) => {
                     return a.collisionY - b.collisionY;
@@ -229,32 +278,38 @@ window.addEventListener('load', function () {
                     object.draw(context);
                     object.update();
                 });
-                
+
                 this.timer = 0;
             }
             this.timer += deltaTime;
 
             // add eggs periodically
-            if (this.eggTimer > this.eggInterval && this.eggs.length < this.maxEggs){
+            if (this.eggTimer > this.eggInterval && this.eggs.length < this.maxEggs) {
                 this.addEgg();
                 this.eggTimer = 0;
-            }else{
+            } else {
                 this.eggTimer += deltaTime;
             }
         }
-        checkCollision(a,b){
+        checkCollision(a, b) {
             const dx = a.collisionX - b.collisionX;
             const dy = a.collisionY - b.collisionY;
-            const distance = Math.hypot(dy,dx);
+            const distance = Math.hypot(dy, dx);
             const sumOfRadii = a.collisionRadius + b.collisionRadius;
             return [(distance < sumOfRadii), distance, sumOfRadii, dx, dy];
         }
-        addEgg(){
+        addEgg() {
             this.eggs.push(new Egg(this));
         }
-        init(){
+        addEnemy() {
+            this.enemies.push(new Enemy(this));
+        }
+        init() {
+            for (let i = 0; i < 3; i++) {
+                this.addEnemy();
+            }
             let attempts = 0;
-            while (this.obstacles.length < this.numberOfObstacles && attempts < 500){
+            while (this.obstacles.length < this.numberOfObstacles && attempts < 500) {
                 let testObstacle = new Obstacle(this);
                 let overlap = false;
                 this.obstacles.forEach(obstacle => {
@@ -263,15 +318,15 @@ window.addEventListener('load', function () {
                     const distance = Math.hypot(dy, dx);
                     const distanceBuffer = 150;
                     const sumOfRadii = testObstacle.collisionRadius + obstacle.collisionRadius + distanceBuffer;
-                    if (distance < sumOfRadii){
+                    if (distance < sumOfRadii) {
                         overlap = true;
                     }
                 });
                 const margin = testObstacle.collisionRadius * 3;
-                if (!overlap && testObstacle.spriteX > 0 && testObstacle.spriteX < this.width - testObstacle.width && testObstacle.collisionY > this.topMargin + margin && testObstacle.collisionY < this.height - margin){
+                if (!overlap && testObstacle.spriteX > 0 && testObstacle.spriteX < this.width - testObstacle.width && testObstacle.collisionY > this.topMargin + margin && testObstacle.collisionY < this.height - margin) {
                     this.obstacles.push(testObstacle);
                 }
-                attempts ++;
+                attempts++;
             }
         }
     }
@@ -279,7 +334,7 @@ window.addEventListener('load', function () {
     const game = new Game(canvas);
     game.init();
     console.log(game);
-    
+
     let lastTime = 0;
     function animate(timeStamp) {
         const deltaTime = timeStamp - lastTime;
